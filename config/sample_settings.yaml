@@ -1,0 +1,46 @@
+browser:
+  # 是否使用无头模式
+  headless: false
+  
+  # 请求超时时间 (秒)
+  wait_time: 10
+  
+  retry_times: 3
+  retry_interval: 5
+
+  # Chrome 用户数据目录
+  user_data_folder: "user_data"
+
+  # 使用的用户配置名称
+  profile_name: "Profile_1"
+
+book:
+  # 小说 ID 列表
+  book_ids:
+    - 1234567890
+    - 2345678901
+
+  # 每次请求间隔 (秒)
+  wait_time: 10
+
+  # 原始章节数据保存路径
+  save_path: "./qidian/"
+
+  # 输出文件保存路径
+  out_path: "./downloads/"
+
+  # 本地缓存目录
+  local_cache_dir: "./local_cache/"
+
+content_handling:
+  # 是否尝试解码混淆字体
+  save_html: false
+  decode_font: false
+  use_freq: true # 是否使用频率分析
+  use_ocr: false # 是否使用 OCR 辅助识别文本
+
+output_options:
+  ignore_missing: true # 跳过下载失败的章节
+  append_timestamp: true
+  make_txt: true # 是否生成完整 TXT 文件
+  make_epub: false # 是否生成 EPUB

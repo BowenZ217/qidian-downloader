@@ -1,0 +1,8 @@
+imagehash
+numpy
+requests
+cssutils
+fonttools
+pillow
+scikit-learn
+Brotli

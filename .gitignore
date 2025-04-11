@@ -172,3 +172,19 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Settings
+config/settings.yaml
+
+# PaddleOCR
+PP-OCRv4-server/
+
+# DrissionPage
+user_data/
+
+# Temp
+src/state.json
+local_cache/
+logs/
+qidian/
+resources/fixed_font_map/
