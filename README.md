@@ -9,7 +9,7 @@
 ## 功能
 
 - 爬取起点中文网的小说章节内容
-- 自动整合所有章节生成完整的 TXT 文件 (文件名中附加时间戳以避免覆盖) 
+- 自动整合所有章节生成完整的 TXT 文件
 - **TODO:** 支持输出为 EPUB 格式
 - **TODO:** 支持广告过滤
 
@@ -23,6 +23,11 @@
 ```bash
 conda create -n qd_downloader python=3.11 -y
 conda activate qd_downloader
+```
+
+安装依赖库:
+
+```bash
 pip install -r requirements.txt
 ```
 
@@ -92,6 +97,8 @@ pip install -r requirements.txt
    ```bash
    python main.py
    ```
+
+   p.s. 启动前请确保安装完依赖库
 
    首次运行时, 程序可能会打开浏览器提示登录, 请按提示登录你的账号, 以便程序能获取需要的小说内容。
 
