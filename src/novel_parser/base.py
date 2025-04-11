@@ -9,6 +9,8 @@ its abstract methods for parsing book information, chapter content, and other me
 import os
 from bs4 import BeautifulSoup
 
+from ..utils.logger import log_message
+
 class BaseParser:
     """
     Abstract base class for parsing HTML content from online novel platforms.
@@ -53,7 +55,12 @@ class BaseParser:
         Args:
             html_str (str): Raw HTML content to be parsed.
         """
-        self.soup = BeautifulSoup(html_str, 'html.parser')
+        # self.soup = BeautifulSoup(html_str, 'html.parser')
+        try:
+            self.soup = BeautifulSoup(html_str, "lxml")
+        except Exception as e:
+            log_message(f"[Soup] Failed to parse with lxml, falling back to html.parser. Error: {e}")
+            self.soup = BeautifulSoup(html_str, "html.parser")
 
     def is_vip(self) -> bool:
         """
