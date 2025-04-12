@@ -61,14 +61,14 @@ pip install -r requirements.txt
 
 1. **克隆项目**
 
-   ```bash
-   git clone https://github.com/BowenZ217/qidian-downloader.git
-   cd qidian-downloader
-   ```
+    ```bash
+    git clone https://github.com/BowenZ217/qidian-downloader.git
+    cd qidian-downloader
+    ```
 
 2. **配置设置**
 
-   将 `config/sample_settings.yaml` 重命名为 `config/settings.yaml`, 然后根据你的需求修改配置参数。例如:
+    打开 `config/sample_settings.yaml` [文件](config/sample_settings.yaml) 并根据你的需求修改配置参数。例如:
 
     ```yaml
     book:
@@ -78,7 +78,7 @@ pip install -r requirements.txt
             - 1234567890
     content_handling:
         # 是否尝试解码混淆字体
-        save_html: true
+        save_html: false
         decode_font: false
         use_freq: true # 是否使用频率分析
         use_ocr: false # 是否使用 OCR 辅助识别文本
@@ -88,19 +88,39 @@ pip install -r requirements.txt
         make_txt: true
     ```
 
-   其中, `append_timestamp` 配置项用于在生成的 TXT 文件名中附加时间戳, 避免保存时覆盖已有文件。
+    其中, `append_timestamp` 配置项用于在生成的 TXT 文件名中附加时间戳, 避免保存时覆盖已有文件。
 
 3. **运行下载程序**
 
-   在项目根目录下运行脚本: 
+    在项目根目录下运行脚本: 
 
-   ```bash
-   python main.py
-   ```
+    ```bash
+    python main.py
+    ```
 
-   p.s. 启动前请确保安装完依赖库
+    **提示**: 启动前请确保安装完依赖库
 
-   首次运行时, 程序可能会打开浏览器提示登录, 请按提示登录你的账号, 以便程序能获取需要的小说内容。
+    首次运行时, 程序可能会打开浏览器提示登录, 请按提示登录你的账号, 以便程序能获取需要的小说内容。
+
+    **可选参数**
+
+    你也可以使用以下命令行参数来自定义行为:
+    - 查看所有参数和说明:
+        ```bash
+        python main.py -h
+        ```
+    - 使用自定义配置文件:
+        ```bash
+        python main.py --config config/sample_settings.yaml
+        ```
+    - 指定下载特定小说 (覆盖配置文件中的 `book_ids`):
+        ```bash
+        python main.py --book-id 123456
+        ```
+    - 同时下载多个小说:
+        ```bash
+        python main.py --book-id 123456 654321 789012
+        ```
 
 ## `settings.yaml` 配置说明
 
