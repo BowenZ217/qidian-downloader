@@ -12,7 +12,6 @@ from src.qd_txt_saver import qd_save_as_txt
 # from src.qidian_downloader import download_qd_novel
 from src.qidian_downloader_v2 import download_qd_novel_mp
 from src.utils import logger
-from src.utils.state_manager import get_manual_login_flag, set_manual_login_flag
 
 def main():
     logger.setup_logging("qidian_downloader")
@@ -28,23 +27,9 @@ def main():
     make_epub = output_options_config.get("make_epub", False)
 
     # Create a QidianBrowser instance based on the configuration data.
-    qd_browser = load_qd_browser(config)
-    
-    # Check if manual login was required during the previous run.
-    if get_manual_login_flag():
-        # If manual login is needed, perform the manual login process.
-        if qd_browser.manual_login():
-            # Reset the manual login state after a successful login.
-            set_manual_login_flag(False)
-        else:
-            logger.log_message("[X] Manual login failed, please check and try again.", level="warning")
-            return
-    else:
-        # Attempt automatic login.
-        if not qd_browser.login():
-            logger.log_message("[X] Automatic login in headless mode failed. Please use manual login.", level="warning")
-            set_manual_login_flag(True)
-            return
+    qd_browser = load_qd_browser(config, login=True)
+    if not qd_browser:
+        return
 
     for book_id in book_ids:
         # download_qd_novel(qd_browser, book_id, config=config)

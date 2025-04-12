@@ -9,6 +9,8 @@ import os
 import yaml
 from .browser.qidian_browser import QidianBrowser
 from .novel_parser.qidian import QidianBookParser, QidianChapterParser
+from .utils.state_manager import get_manual_login_flag, set_manual_login_flag
+from .utils.logger import log_message
 
 CUR_DIR = os.getcwd()
 
@@ -26,7 +28,7 @@ def load_config(config_path: str) -> dict:
         config = yaml.safe_load(f)
     return config
 
-def load_qd_browser(config: dict) -> QidianBrowser:
+def load_qd_browser(config: dict, login: bool=False) -> QidianBrowser:
     """
     Create a QidianBrowser instance based on the configuration data.
     
@@ -69,7 +71,7 @@ def load_qd_browser(config: dict) -> QidianBrowser:
     retry_times = browser_config.get("retry_times", 3)
     retry_interval = browser_config.get("retry_interval", 5)
 
-    return QidianBrowser(
+    qd_browser = QidianBrowser(
         user_data_dir=user_data_dir,
         profile_name=profile_name,
         headless=headless,
@@ -77,6 +79,26 @@ def load_qd_browser(config: dict) -> QidianBrowser:
         retry_times=retry_times,
         retry_interval=retry_interval
     )
+
+    if not login:
+        return qd_browser
+    
+    # Check if manual login was required during the previous run.
+    if get_manual_login_flag():
+        # If manual login is needed, perform the manual login process.
+        if qd_browser.manual_login():
+            # Reset the manual login state after a successful login.
+            set_manual_login_flag(False)
+        else:
+            log_message("[X] Manual login failed, please check and try again.", level="warning")
+            return None
+    else:
+        # Attempt automatic login.
+        if not qd_browser.login():
+            log_message("[X] Automatic login in headless mode failed. Please use manual login.", level="warning")
+            set_manual_login_flag(True)
+            return None
+    return qd_browser
 
 def load_qd_book_parser(config: dict, html_str: str = "", book_id: str = "") -> QidianBookParser:
     """
