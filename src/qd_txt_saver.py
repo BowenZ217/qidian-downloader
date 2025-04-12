@@ -9,6 +9,7 @@ import os
 
 from .utils.file_saver import save_as_txt
 from .utils.logger import log_message
+from .utils.text_utils import clean_chapter_title
 
 def qd_save_as_txt(book_id: int, config: dict) -> None:
     """
@@ -80,7 +81,11 @@ def qd_save_as_txt(book_id: int, config: dict) -> None:
             except Exception as e:
                 log_message(f"[qd_save_as_txt] 读取章节文件 {chapter_path} 出错: {e}", level="error")
                 continue
-            
+
+            # 清理标题里的活动广告 (例如 "月票")
+            chapter_title_clean = clean_chapter_title(chapter_title)
+            chapter_content.replace(chapter_title, chapter_title_clean)
+
             # 添加章节标题和内容
             compiled_chapters += f"\n\n{chapter_content}\n\n"
             latest_chapter_title = chapter_title
