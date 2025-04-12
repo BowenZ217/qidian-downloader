@@ -55,7 +55,8 @@ def fetcher(fetch_queue: mp.Queue, parse_queue: mp.Queue,
         chapter_html = qd_browser.get_book_chapter(book_id, chapter_id, wait_time)
         parse_queue.put((chapter, chapter_html))
 
-def parser_saver(parse_queue: mp.Queue, fetch_queue: mp.Queue, config: dict, book_id: str, chapter_dir: str):
+def parser_saver(parse_queue: mp.Queue, fetch_queue: mp.Queue, encrypted_parse_queue: mp.Queue,
+                 config: dict, book_id: str, chapter_dir: str):
     """
     Process function for parsing HTML and saving chapter text.
 
@@ -91,10 +92,11 @@ def parser_saver(parse_queue: mp.Queue, fetch_queue: mp.Queue, config: dict, boo
         if qd_chapter_parser.is_encrypted():
             if not decode_font:
                 log_message(f"[Parser] Skipping encrypted chapter: {chapter_title} ({chapter_id})")
-                continue
             else:
                 log_message(f"[Parser] Try parse encrypted chapter: {chapter_title} ({chapter_id})")
-                qd_chapter_parser = load_qd_encrypted_chapter_parser(config, html_str=chapter_html, book_id=book_id)
+                if encrypted_parse_queue is not None:
+                    encrypted_parse_queue.put((chapter, chapter_html))
+            continue
 
         chapter_text = qd_chapter_parser.get_content(chapter_id)
         if not chapter_text:
@@ -111,6 +113,39 @@ def parser_saver(parse_queue: mp.Queue, fetch_queue: mp.Queue, config: dict, boo
         chapter_path = os.path.join(chapter_dir, f"{chapter_id}.txt")
         file_saver.save_as_txt(chapter_text, chapter_path)
         log_message(f"[Parser] Successfully saved chapter: {chapter_title} ({chapter_id})")
+
+def encrypted_parser_saver(encrypted_parse_queue: mp.Queue, fetch_queue: mp.Queue, 
+                           config: dict, book_id: str, chapter_dir: str):
+    """
+    Encrypted Parser Saver process: Uses OCR-based parser for encrypted chapters.
+    """
+    setup_logging("qidian_encrypted_parser")
+    while True:
+        item = encrypted_parse_queue.get()  # Blocking call
+        if item is None:
+            break
+
+        chapter, chapter_html = item
+        chapter_id = chapter.get("chapterId")
+        chapter_title = chapter.get("title", "")
+
+        # Use the OCR-based parser for encrypted chapters.
+        qd_chapter_parser = load_qd_encrypted_chapter_parser(config, html_str=chapter_html, book_id=book_id)
+        chapter_text = qd_chapter_parser.get_content(chapter_id)
+        if not chapter_text:
+            log_message(f"[Encrypted Parser] Failed to parse chapter: {chapter_title} ({chapter_id})", level="warning")
+            retries = chapter.get("retries", 0)
+            if retries < MAX_RETRIES:
+                chapter["retries"] = retries + 1
+                log_message(f"[Encrypted Parser] Retrying chapter: {chapter_title} ({chapter_id}), retry: {chapter['retries']}/{MAX_RETRIES}", level="warning")
+                fetch_queue.put(chapter)
+            else:
+                log_message(f"[Encrypted Parser] Failed chapter after maximum retries: {chapter_title} ({chapter_id})", level="warning")
+            continue
+
+        chapter_path = os.path.join(chapter_dir, f"{chapter_id}.txt")
+        file_saver.save_as_txt(chapter_text, chapter_path)
+        log_message(f"[Encrypted Parser] Successfully saved chapter: {chapter_title} ({chapter_id})")
 
 def download_qd_novel_mp(qd_browser: QidianBrowser, book_id: str, config: dict) -> None:
     """
@@ -132,9 +167,11 @@ def download_qd_novel_mp(qd_browser: QidianBrowser, book_id: str, config: dict) 
     """
     book_id = str(book_id)
     book_config = config.get("book", {})
+    content_handling_config = config.get("content_handling", {})
     
     wait_time = book_config.get("wait_time", 10)
     save_path = book_config.get("save_path", "./qidian/")
+    decode_font = content_handling_config.get("decode_font", False)
 
     target_path = os.path.join(save_path, book_id)
     os.makedirs(target_path, exist_ok=True)
@@ -168,10 +205,17 @@ def download_qd_novel_mp(qd_browser: QidianBrowser, book_id: str, config: dict) 
     # Initialize queues before iterating over volumes.
     fetch_queue = mp.Queue(maxsize=MAX_FETCH_QUEUE_SIZE)
     parse_queue = mp.Queue()
+    encrypted_parse_queue = None
+    p_encrypted_parser = None
+
+    if decode_font:
+        encrypted_parse_queue = mp.Queue()
+        p_encrypted_parser = mp.Process(target=encrypted_parser_saver, args=(encrypted_parse_queue, fetch_queue, config, book_id, chapter_dir))
+        p_encrypted_parser.start()
 
     # Create fetcher and parser processes.
     p_fetcher = mp.Process(target=fetcher, args=(fetch_queue, parse_queue, qd_browser, book_id, wait_time))
-    p_parser = mp.Process(target=parser_saver, args=(parse_queue, fetch_queue, config, book_id, chapter_dir))
+    p_parser = mp.Process(target=parser_saver, args=(parse_queue, fetch_queue, encrypted_parse_queue, config, book_id, chapter_dir))
 
     p_fetcher.start()
     p_parser.start()
@@ -198,6 +242,11 @@ def download_qd_novel_mp(qd_browser: QidianBrowser, book_id: str, config: dict) 
 
     p_fetcher.join()
     p_parser.join()
+
+    # If Decode is enabled, signal termination and wait.
+    if decode_font:
+        encrypted_parse_queue.put(None)
+        p_encrypted_parser.join()
 
     log_message("[Main] Novel download completed.")
     return
