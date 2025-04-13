@@ -44,8 +44,11 @@ class QidianChapterParser(BaseParser):
         if self._save_html and self._book_id:
             self.html_plain_folder = os.path.join(self._local_cache_dir, self._book_id, 'html_plain')
             os.makedirs(self.html_plain_folder, exist_ok=True)
+            self.html_encrypted_folder = os.path.join(self._local_cache_dir, self._book_id, 'html_encrypted')
+            os.makedirs(self.html_encrypted_folder, exist_ok=True)
         else:
             self.html_plain_folder = None
+            self.html_encrypted_folder = None
 
     def set_book_id(self, book_id: str):
         """
@@ -109,6 +112,22 @@ class QidianChapterParser(BaseParser):
         except Exception as e:
             log_message(f"[X] Error at find_ssr_pageContext: {e}", level="warning")
         return {}
+    
+    def _save_html_to_disk(self, chapter_id: int):
+        """
+        Save the current HTML content to disk.
+
+        Args:
+            chapter_id (int): The chapter's identifier.
+        """
+        if not self._save_html or not self._book_id:
+            return
+
+        folder = self.html_encrypted_folder if self.is_encrypted() else self.html_plain_folder
+        if folder:
+            html_path = os.path.join(folder, f"{chapter_id}.html")
+            save_as_txt(self._html_str, html_path)
+        return
 
     def get_content(self, chapter_id: int) -> str:
         """
@@ -144,9 +163,7 @@ class QidianChapterParser(BaseParser):
                 return ''
 
             # Save the raw HTML locally if enabled.
-            if self._save_html and self.html_plain_folder:
-                html_path = os.path.join(self.html_plain_folder, f"{chapter_id}.html")
-                save_as_txt(self._html_str, html_path)
+            # self._save_html_to_disk(chapter_id)
 
             # Extract SSR page context. Assumes find_ssr_pageContext is defined and returns the necessary context.
             ssr_pageContext = self.find_ssr_pageContext()

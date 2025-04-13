@@ -89,6 +89,8 @@ def parser_saver(parse_queue: mp.Queue, fetch_queue: mp.Queue, encrypted_parse_q
         if qd_chapter_parser.is_vip():
             log_message(f"[Parser] Skipping VIP chapter: {chapter_title} ({chapter_id})")
             continue
+
+        qd_chapter_parser._save_html_to_disk(chapter_id)
         if qd_chapter_parser.is_encrypted():
             if not decode_font:
                 log_message(f"[Parser] Skipping encrypted chapter: {chapter_title} ({chapter_id})")

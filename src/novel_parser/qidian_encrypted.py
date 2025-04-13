@@ -50,9 +50,12 @@ class QidianEncryptedChapterParser(BaseParser):
         
         self._book_id = book_id
         if self._save_html and self._book_id:
+            self.html_plain_folder = os.path.join(self._local_cache_dir, self._book_id, 'html_plain')
+            os.makedirs(self.html_plain_folder, exist_ok=True)
             self.html_encrypted_folder = os.path.join(self._local_cache_dir, self._book_id, 'html_encrypted')
             os.makedirs(self.html_encrypted_folder, exist_ok=True)
         else:
+            self.html_plain_folder = None
             self.html_encrypted_folder = None
         self._use_freq = use_freq
         self._use_ocr = use_ocr
@@ -102,6 +105,22 @@ class QidianEncryptedChapterParser(BaseParser):
         if not main_content:
             return False
         return 'r-font-encrypt' in main_content.get('class', [])
+    
+    def _save_html_to_disk(self, chapter_id: int):
+        """
+        Save the current HTML content to disk.
+
+        Args:
+            chapter_id (int): The chapter's identifier.
+        """
+        if not self._save_html or not self._book_id:
+            return
+
+        folder = self.html_encrypted_folder if self.is_encrypted() else self.html_plain_folder
+        if folder:
+            html_path = os.path.join(folder, f"{chapter_id}.html")
+            save_as_txt(self._html_str, html_path)
+        return
     
     def find_ssr_pageContext(self) -> dict:
         """
@@ -493,9 +512,7 @@ class QidianEncryptedChapterParser(BaseParser):
             authorSay_str = ssr_chapterInfo['authorSay']
 
             # Save the raw HTML locally if enabled.
-            if self._save_html and self.html_encrypted_folder:
-                html_path = os.path.join(self.html_encrypted_folder, f"{chapter_id}.html")
-                save_as_txt(self._html_str, html_path)
+            # self._save_html_to_disk(chapter_id)
         except Exception as e:
             log_message(f"[X] Fail to get ssr_pageContext for '{chapter_id}': {e}", level="warning")
             return ""
