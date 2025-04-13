@@ -190,6 +190,7 @@ class QidianBrowser(BaseBrowser):
             # 6. 恢复原来 headless 模式的设置并重新初始化浏览器
             self._options.headless(self._headless)
             self._setup()
+            self.login()
 
         return self._logged_in
 
