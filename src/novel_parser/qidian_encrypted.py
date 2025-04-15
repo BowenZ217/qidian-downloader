@@ -137,7 +137,7 @@ class QidianEncryptedChapterParser(BaseParser):
                 data_dict = json.loads(json_data)
                 return data_dict
         except Exception as e:
-            log_message(f"[X] Error at find_ssr_pageContext: {e}", level="warning")
+            log_message(f"[QidianEncryptedChapterParser] Error at find_ssr_pageContext: {e}", level="warning")
         return {}
     
     def _extract_encrypted_paragraphs(self) -> list:
@@ -362,7 +362,7 @@ class QidianEncryptedChapterParser(BaseParser):
         rec_parse(main_paragraphs)
 
         if not end_numbers:
-            log_message(f"[X] No valid ending numbers found", level="warning")
+            log_message(f"[QidianEncryptedChapterParser] No valid ending numbers found", level="warning")
             return None
 
         # Sort the numbers by their count, then by the number itself (both in descending order).
@@ -371,7 +371,7 @@ class QidianEncryptedChapterParser(BaseParser):
 
         # Log the top 3 most common ending numbers for debugging
         top_three = sorted_numbers[:3]
-        debug_message = "[!] Top 3 end numbers:\n"
+        debug_message = "[QidianEncryptedChapterParser] Top 3 end numbers:\n"
         for num, count in top_three:
             debug_message += f"- {num}: {count}\n"
         log_message(debug_message)
@@ -461,7 +461,7 @@ class QidianEncryptedChapterParser(BaseParser):
                         continue
                     
                     if not p_class_str:
-                        log_message(f"[!] not find p_class_str: {class_list}", level="warning")
+                        log_message(f"[QidianEncryptedChapterParser] not find p_class_str: {class_list}", level="warning")
                         continue
                     # 普通标签处理，根据 orders 顺序匹配
                     for ord_selector, ord_id in orders:
@@ -502,7 +502,7 @@ class QidianEncryptedChapterParser(BaseParser):
             page_data = page_props.get('pageData', {})
             ssr_chapterInfo = page_data.get('chapterInfo')
             if ssr_chapterInfo is None:
-                log_message(f"[X] ssr_chapterInfo not found for chapter '{chapter_id}'.", level="warning")
+                log_message(f"[QidianEncryptedChapterParser] ssr_chapterInfo not found for chapter '{chapter_id}'.", level="warning")
                 return ''
             css_str = ssr_chapterInfo['css']
             randomFont_str = ssr_chapterInfo['randomFont']
@@ -514,7 +514,7 @@ class QidianEncryptedChapterParser(BaseParser):
             # Save the raw HTML locally if enabled.
             # self._save_html_to_disk(chapter_id)
         except Exception as e:
-            log_message(f"[X] Fail to get ssr_pageContext for '{chapter_id}': {e}", level="warning")
+            log_message(f"[QidianEncryptedChapterParser] Fail to get ssr_pageContext for '{chapter_id}': {e}", level="warning")
             return ""
 
         debug_folder_path = os.path.join(self._local_cache_dir, "chapters", str(chapter_id))
@@ -533,7 +533,7 @@ class QidianEncryptedChapterParser(BaseParser):
         # Extract and render paragraphs from HTML with CSS rules
         main_paragraphs = self._extract_encrypted_paragraphs()
         if not main_paragraphs:
-            log_message(f"[!] Warning: Fail to parse paragraphs for chapter '{chapter_id}'", level="warning")
+            log_message(f"[QidianEncryptedChapterParser] Warning: Fail to parse paragraphs for chapter '{chapter_id}'", level="warning")
             return ""
         main_paragraphs_path = os.path.join(debug_folder_path, f"main_paragraphs_debug.json")
         with open(main_paragraphs_path, 'w', encoding='utf-8') as f:
@@ -552,7 +552,7 @@ class QidianEncryptedChapterParser(BaseParser):
             f.write(temp)
 
         if not end_number:
-            log_message(f"[!] Warning: No end_number found after parsing chapter '{chapter_id}'", level="warning")
+            log_message(f"[QidianEncryptedChapterParser] Warning: No end_number found after parsing chapter '{chapter_id}'", level="warning")
             return ""
         paragraphs_str, refl_list = self._render_encrypted_paragraphs(main_paragraphs, paragraphs_rules, end_number)
 

@@ -8,10 +8,11 @@ import os
 import time
 import argparse
 
-from src.config_loader import load_config, load_qd_browser
-from src.qd_txt_saver import qd_save_as_txt
-# from src.qidian_downloader import download_qd_novel
-from src.qidian_downloader_v2 import download_qd_novel_mp
+from src.config_loader import load_config
+from src.config_loader.qd_loader import load_qd_browser
+from src.novel_saver.qd_saver import qd_save_as_txt
+# from src.downloader.qidian_downloader import download_qd_novel
+from src.downloader.qidian_downloader_v2 import download_qd_novel_mp
 from src.utils import logger
 
 def main():

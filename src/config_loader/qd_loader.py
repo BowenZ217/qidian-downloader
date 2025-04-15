@@ -1,32 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This module provides functions for loading configuration data and creating
-a QidianBrowser instance from the configuration.
+This module provides functions for creating Qidian related
 """
 
 import os
-import yaml
-from .browser.qidian_browser import QidianBrowser
-from .novel_parser.qidian import QidianBookParser, QidianChapterParser
-from .utils.state_manager import get_manual_login_flag, set_manual_login_flag
-from .utils.logger import log_message
+
+from ..browser.qidian_browser import QidianBrowser
+from ..novel_parser.qidian import QidianBookParser, QidianChapterParser
+from ..utils.state_manager import get_manual_login_flag, set_manual_login_flag
+from ..utils.logger import log_message
 
 CUR_DIR = os.getcwd()
-
-def load_config(config_path: str) -> dict:
-    """
-    Load configuration data from a YAML file.
-    
-    Args:
-        config_path (str): The path to the YAML configuration file.
-        
-    Returns:
-        dict: The configuration data.
-    """
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    return config
 
 def load_qd_browser(config: dict, login: bool=False) -> QidianBrowser:
     """
@@ -90,12 +75,12 @@ def load_qd_browser(config: dict, login: bool=False) -> QidianBrowser:
             # Reset the manual login state after a successful login.
             set_manual_login_flag(False)
         else:
-            log_message("[X] Manual login failed, please check and try again.", level="warning")
+            log_message("[Qidian loader] Manual login failed, please check and try again.", level="warning")
             return None
     else:
         # Attempt automatic login.
         if not qd_browser.login():
-            log_message("[X] Automatic login in headless mode failed. Please use manual login.", level="warning")
+            log_message("[Qidian loader] Automatic login in headless mode failed. Please use manual login.", level="warning")
             set_manual_login_flag(True)
             return None
     return qd_browser
@@ -182,7 +167,7 @@ def load_qd_encrypted_chapter_parser(config: dict, html_str: str = "", book_id: 
     Returns:
         QidianEncryptedChapterParser: An instance configured according to the provided settings.
     """
-    from .novel_parser.qidian_encrypted import QidianEncryptedChapterParser
+    from ..novel_parser.qidian_encrypted import QidianEncryptedChapterParser
 
     book_config = config.get("book", {})
     content_handling_config = config.get("content_handling", {})

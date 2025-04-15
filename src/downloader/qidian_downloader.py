@@ -11,10 +11,10 @@ It includes functions to:
 import json
 import os
 
-from .browser.qidian_browser import QidianBrowser
-from .config_loader import load_qd_book_parser, load_qd_chapter_parser, load_qd_encrypted_chapter_parser
-from .utils import time_utils, file_saver
-from .utils.logger import log_message
+from ..browser.qidian_browser import QidianBrowser
+from ..config_loader.qd_loader import load_qd_book_parser, load_qd_chapter_parser, load_qd_encrypted_chapter_parser
+from ..utils import time_utils, file_saver
+from ..utils.logger import log_message
 
 def get_book_chapter_str(qd_browser: QidianBrowser, book_id: str, chapter_id: str, config: dict,
                          wait_time: int=5, retry_count: int=3) -> str:
@@ -58,7 +58,8 @@ def download_qd_novel(qd_browser: QidianBrowser, book_id: str, config: dict) -> 
     book_config = config.get("book", {})
     
     book_wait_time = book_config.get("wait_time", 10)
-    save_path = book_config.get("save_path", "./qidian/")
+    raw_data_dir = book_config.get("save_path", "./raw_data_dir/")
+    save_path = os.path.join(raw_data_dir, "qidian")
 
     target_path = os.path.join(save_path, book_id)
     os.makedirs(target_path, exist_ok=True)

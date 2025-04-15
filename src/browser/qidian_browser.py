@@ -73,7 +73,7 @@ class QidianBrowser(BaseBrowser):
                     return True
         except Exception as e:
             # Ensure that log_message is defined in your project or replace it with your logging mechanism.
-            log_message(f"[X] Error while checking login status: {e}", level="warning")
+            log_message(f"[QidianBrowser] Error while checking login status: {e}", level="warning")
         return False
 
     def login(self, max_retries=3):
@@ -99,53 +99,53 @@ class QidianBrowser(BaseBrowser):
                 try:
                     mask = self._page.ele("@@tag()=div@@class=mask")
                     if mask:
-                        log_message("[!] Overlay mask detected.")
+                        log_message("[QidianBrowser] Overlay mask detected.")
                         # Use get_frame() to retrieve the iframe containing the overlay.
                         login_iframe = self._page.get_frame('loginIfr', timeout=5)
                         if login_iframe:
                             close_btn = login_iframe.ele('@id=close', timeout=5)
                             if close_btn:
-                                log_message("[>] Clicking close button for overlay mask in iframe.")
+                                log_message("[QidianBrowser] Clicking close button for overlay mask in iframe.")
                                 close_btn.click()
                             else:
-                                log_message("[X] Close button not found in the login iframe.")
+                                log_message("[QidianBrowser] Close button not found in the login iframe.")
                         else:
-                            log_message("[X] Login iframe not found for overlay mask.")
+                            log_message("[QidianBrowser] Login iframe not found for overlay mask.")
                         # Wait after handling the mask.
                         time.sleep(5)
                 except Exception as me:
-                    log_message(f"[X] Exception encountered checking for overlay mask: {me}")
+                    log_message(f"[QidianBrowser] Exception encountered checking for overlay mask: {me}")
 
                 # Check login state; if already logged in, exit the loop.
                 if self._is_user_logged_in():
-                    log_message("[!] Already logged in, exiting login loop.")
+                    log_message("[QidianBrowser] Already logged in, exiting login loop.")
                     break
 
                 # Attempt to click the login button.
                 try:
-                    log_message(f"[>] Not logged in, attempting to click login button (Attempt {retries + 1})...")
+                    log_message(f"[QidianBrowser] Not logged in, attempting to click login button (Attempt {retries + 1})...")
                     login_btn = self._page.ele('@id=login-btn', timeout=5)
                     if login_btn:
                         login_btn.click()
                     else:
-                        log_message("[X] Login button not found.")
+                        log_message("[QidianBrowser] Login button not found.")
                 except Exception as e:
-                    log_message(f"[X] Login click failed: {e}")
+                    log_message(f"[QidianBrowser] Login click failed: {e}")
 
                 time.sleep(5)
                 retries += 1
 
             self._logged_in = self._is_user_logged_in()
             if self._logged_in:
-                log_message("[DONE] Login successful.")
+                log_message("[QidianBrowser] Login successful.")
             else:
-                log_message("[!] Max retries reached, still not logged in.")
+                log_message("[QidianBrowser] Max retries reached, still not logged in.")
 
             self._page.get(original_url)
             return self._logged_in
 
         except Exception as e:
-            log_message(f"[X] Login process error: {e}", level="warning")
+            log_message(f"[QidianBrowser] Login process error: {e}", level="warning")
         return False
 
     def manual_login(self):
@@ -177,10 +177,10 @@ class QidianBrowser(BaseBrowser):
         while True:
             self._logged_in = self._is_user_logged_in()
             if self._logged_in:
-                log_message("[INFO] 检测到用户已登录")
+                log_message("[QidianBrowser] 检测到用户已登录")
                 break
             else:
-                log_message("[WARNING] 登录状态未检测到, 请确认是否完成登录, 稍后重试")
+                log_message("[QidianBrowser] 登录状态未检测到, 请确认是否完成登录, 稍后重试")
             input("登录完成后, 请按回车键继续程序...")
 
         if self._headless:
@@ -219,7 +219,7 @@ class QidianBrowser(BaseBrowser):
             sleep_random_range(wait_time, 3)
             return self._page.html
         except Exception as e:
-            log_message(f"[X] Error while fetching book info HTML from '{url}': {e}", level="warning")
+            log_message(f"[QidianBrowser] Error while fetching book info HTML from '{url}': {e}", level="warning")
         return ""
 
     def get_book_chapter(self, book_id: str, chapter_id: str, wait_time: int = 5) -> str:
@@ -252,7 +252,7 @@ class QidianBrowser(BaseBrowser):
                 time.sleep(0.5)
             return self._page.html
         except Exception as e:
-            log_message(f"[X] Error while fetching chapter HTML from '{url}': {e}", level="warning")
+            log_message(f"[QidianBrowser] Error while fetching chapter HTML from '{url}': {e}", level="warning")
         return ""
 
     def get_bookcase(self, wait_time: int = 5) -> str:
@@ -279,5 +279,5 @@ class QidianBrowser(BaseBrowser):
             sleep_random_range(wait_time, 3)
             return self._page.html
         except Exception as e:
-            log_message(f"[X] Error while fetching bookcase HTML from '{url}': {e}", level="warning")
+            log_message(f"[QidianBrowser] Error while fetching bookcase HTML from '{url}': {e}", level="warning")
             return ""

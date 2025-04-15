@@ -24,7 +24,7 @@ book:
   wait_time: 10
 
   # 原始章节数据保存路径
-  save_path: "./qidian/"
+  save_path: "./raw_data_dir/"
 
   # 输出文件保存路径
   out_path: "./downloads/"

@@ -150,7 +150,7 @@ pip install -r requirements.txt
 |------------------|--------|--------------|------|
 | `book_ids`       | list   | `[]`         | 要下载的小说 ID 列表（从小说链接中提取） |
 | `wait_time`      | int    | `10`         | 每次章节请求之间的间隔 |
-| `save_path`      | str    | `"./qidian/"` | 原始章节内容的保存目录 |
+| `save_path`      | str    | `"./raw_data_dir/"` | 原始章节内容的保存目录 |
 | `out_path`       | str    | `"./downloads/"` | 合并后的 TXT / EPUB 输出路径 |
 | `local_cache_dir`| str    | `"./local_cache/"` | 字体缓存、图像缓存等数据存放目录 |
 

@@ -3,13 +3,13 @@
 """
 """
 
-import datetime
+from datetime import datetime
 import json
 import os
 
-from .utils.file_saver import save_as_txt
-from .utils.logger import log_message
-from .utils.text_utils import clean_chapter_title
+from ..utils.file_saver import save_as_txt
+from ..utils.logger import log_message
+from ..utils.text_utils import clean_chapter_title
 
 def qd_save_as_txt(book_id: int, config: dict) -> None:
     """
@@ -38,7 +38,8 @@ def qd_save_as_txt(book_id: int, config: dict) -> None:
     book_config = config.get("book", {})
     output_options_config = config.get("output_options", {})
 
-    save_path = book_config.get("save_path", "./qidian/")
+    raw_data_dir = book_config.get("save_path", "./raw_data_dir/")
+    save_path = os.path.join(raw_data_dir, "qidian")
     out_path = book_config.get("out_path", "./downloads/")
     ignore_missing = output_options_config.get("ignore_missing", True)
     append_timestamp = output_options_config.get("append_timestamp", True)
@@ -62,7 +63,7 @@ def qd_save_as_txt(book_id: int, config: dict) -> None:
     for volume in volume_list:
         volume_name = volume.get("volume_name", "")
         compiled_chapters += f"\n\n{volume_name}\n\n"
-        log_message(f"[>] Processing volume: {volume_name}")
+        log_message(f"[qd_save_as_txt] Processing volume: {volume_name}")
         curr_chapters = volume.get("chapters", [])
         for chapter in curr_chapters:
             chapter_id = chapter.get("chapterId")

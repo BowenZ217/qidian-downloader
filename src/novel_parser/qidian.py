@@ -110,7 +110,7 @@ class QidianChapterParser(BaseParser):
                 data_dict = json.loads(json_data)
                 return data_dict
         except Exception as e:
-            log_message(f"[X] Error at find_ssr_pageContext: {e}", level="warning")
+            log_message(f"[QidianChapterParser] Error at find_ssr_pageContext: {e}", level="warning")
         return {}
     
     def _save_html_to_disk(self, chapter_id: int):
@@ -153,7 +153,7 @@ class QidianChapterParser(BaseParser):
             main_content = self.soup.select_one('div#app div#reader-content main')
 
             if not main_content:
-                log_message(f"[X] Content structure not found for chapter '{chapter_id}'.", level="warning")
+                log_message(f"[QidianChapterParser] Content structure not found for chapter '{chapter_id}'.", level="warning")
                 return ''
 
             if self.is_vip():
@@ -172,7 +172,7 @@ class QidianChapterParser(BaseParser):
             page_data = page_props.get('pageData', {})
             ssr_chapterInfo = page_data.get('chapterInfo')
             if ssr_chapterInfo is None:
-                log_message(f"[X] ssr_chapterInfo not found for chapter '{chapter_id}'.", level="warning")
+                log_message(f"[QidianChapterParser] ssr_chapterInfo not found for chapter '{chapter_id}'.", level="warning")
                 return ''
             chapterName_str = ssr_chapterInfo.get('chapterName', 'Chapter name not found')
             authorSay_str = ssr_chapterInfo.get('authorSay', '')
@@ -186,7 +186,7 @@ class QidianChapterParser(BaseParser):
             chapter_str = format_chapter(chapterName_str, paragraphs_str, authorSay_str)
 
         except Exception as e:
-            log_message(f"[X] An error occurred during parsing chapter '{chapter_id}': {str(e)}", level="warning")
+            log_message(f"[QidianChapterParser] An error occurred during parsing chapter '{chapter_id}': {str(e)}", level="warning")
         return chapter_str
 
 class QidianBookParser(BaseParser):
@@ -330,7 +330,7 @@ class QidianBookParser(BaseParser):
                         "chapters": chapters
                     })
         except Exception as e:
-            log_message(f'[X] Failed to parse book page: {e}')
+            log_message(f'[QidianBookParser] Failed to parse book page: {e}')
 
         # Organize all extracted data into a dictionary and return
         book_menu = {

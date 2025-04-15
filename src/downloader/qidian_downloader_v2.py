@@ -12,10 +12,10 @@ import json
 import os
 import multiprocessing as mp
 
-from .browser.qidian_browser import QidianBrowser
-from .config_loader import load_qd_book_parser, load_qd_chapter_parser, load_qd_encrypted_chapter_parser
-from .utils import time_utils, file_saver
-from .utils.logger import log_message, setup_logging
+from ..browser.qidian_browser import QidianBrowser
+from ..config_loader.qd_loader import load_qd_book_parser, load_qd_chapter_parser, load_qd_encrypted_chapter_parser
+from ..utils import time_utils, file_saver
+from ..utils.logger import log_message, setup_logging
 
 MAX_FETCH_QUEUE_SIZE = 50
 MAX_RETRIES = 3
@@ -172,7 +172,8 @@ def download_qd_novel_mp(qd_browser: QidianBrowser, book_id: str, config: dict) 
     content_handling_config = config.get("content_handling", {})
     
     wait_time = book_config.get("wait_time", 10)
-    save_path = book_config.get("save_path", "./qidian/")
+    raw_data_dir = book_config.get("save_path", "./raw_data_dir/")
+    save_path = os.path.join(raw_data_dir, "qidian")
     decode_font = content_handling_config.get("decode_font", False)
 
     target_path = os.path.join(save_path, book_id)
