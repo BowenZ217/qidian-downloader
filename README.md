@@ -6,21 +6,18 @@
 
 **qidian-downloader** 是一个基于 [DrissionPage](https://www.drissionpage.cn) 开发的起点小说下载器, 旨在自动爬取起点中文网的小说章节内容, 并将各章节整合输出为一个完整的 TXT 文件。
 
-## 功能
+---
 
-- 爬取起点中文网的小说章节内容 (免费/已订阅)
-- 自动整合所有章节生成完整的 TXT 文件
-- **TODO:** 支持输出为 EPUB 格式
+## 功能特性
+
+- 爬取起点中文网的小说章节内容 (支持免费与已订阅章节)
+- 自动整合所有章节并输出为完整的 TXT 文件
 - 支持活动广告过滤:
   - [x] 章节标题
   - [ ] 章节正文
   - [ ] 作者说
-- **TODO:** 针对加密字体训练 / 微调 PaddleOCR 模型, 以提升识别准确率
-  - [x] 收集常见加密字体样本图像
-  - [x] 标注训练集并转换为 PaddleOCR 格式
-  - [ ] 使用 PaddleOCR 进行模型微调
-  - [ ] 加入验证集监控训练效果
-  - [ ] 替换默认识别模型以提高准确率
+
+---
 
 ## 环境准备
 
@@ -65,6 +62,8 @@ pip install -r requirements.txt
 > ```
 >
 > 如果不启用 OCR (即不使用 `use_ocr` 参数) , 则无需安装 PaddleOCR 及 paddle 相关。
+
+---
 
 ## 使用方法
 
@@ -131,6 +130,8 @@ pip install -r requirements.txt
         python main.py --book-id 123456 654321 789012
         ```
 
+---
+
 ## `settings.yaml` 配置说明
 
 ### `browser` 浏览器配置
@@ -172,11 +173,70 @@ pip install -r requirements.txt
 | `make_txt`        | bool   | `true` | 是否生成合并的 TXT 文件 |
 | `make_epub`       | bool   | `false`| 是否生成 EPUB 文件（尚未实现） |
 
+---
 
 ## 文件保存
 
 - 章节存储: 每部小说的章节内容会保存在配置文件中指定的 `save_path` 文件夹中, 章节文件名格式为 `{chapterId}.txt`。
 - 整合输出: 读取所有章节后, 程序会将它们整合成一个完整的 TXT 文件, 并保存到 `out_path` 中。若启用 `append_timestamp` 选项, 生成的文件名会在原书名基础上附加当前时间戳, 以免重复保存时覆盖旧文件。
+
+---
+
+## TODO
+
+以下为计划中的特性及优化方向
+
+### 支持 EPUB 格式导出
+- 将章节内容导出为 EPUB 格式，适配更多阅读场景
+
+### 加密字体识别优化 (基于 PaddleOCR)
+- [x] 收集常见类似于加密字体的样本图像
+- [x] 标注训练集并转换为 PaddleOCR 可用格式
+- [ ] 使用 PaddleOCR 进行模型微调训练
+- [ ] 加入验证集用于训练过程监控与调优
+- [ ] 替换默认模型以提升整体识别效果
+
+### 移除对 DrissionPage 的依赖，改为解析 JS 注入数据
+- 使用 [`chunk-476a3f3b.js`](./resources/js/chunk-476a3f3b.js) 与 [`4819793b.qeooxh.js`](./resources/js/4819793b.qeooxh.js) 中的函数逻辑进行内容解密
+- 从网页的 `<script id="vite-plugin-ssr_pageContext">` 中提取 JSON 数据:
+    ```python
+    ssr_pageContext = find_ssr_pageContext()
+    page_context = ssr_pageContext.get('pageContext', {})
+    page_props = page_context.get('pageProps', {})
+    page_data = page_props.get('pageData', {})
+    chapter_info = page_data.get('chapterInfo', {})
+
+    fuid = 123456 # 用户账号相关信息, 可通过 DevTools 获取
+    curr_chapter_id = 123456 # 当前章节id
+    en_content = chapter_info.get('content')
+    cES = chapter_info.get('cES')
+    fkp = chapter_info.get('fkp')
+    fEnS = chapter_info.get('fEnS')
+    ```
+- 然后修改并调用相关函数, 例如:
+  - `Fock.setupUserKey(fuid)`
+  - `function initFock(userKey, fkp)`
+  - `function unlockFock(e, t)`
+  - 可能的执行环境模拟:
+      ```js
+      window = global;
+      null_fun = function(){console.log(arguments);}
+      window.outerHeight = 1000
+      window.innerHeight = 100
+      globalThis = window
+      self = window
+      window.location = {}
+      location.protocol = "https:"
+      location.hostname = "vipreader.qidian.com"
+      setTimeout = null_fun
+      setInterval = null_fun
+      document = {createElement: null_fun, documentElement: {}, createEvent: null_fun, currentScript: {src: "https://qdfepccdn.qidian.com/www.qidian.com/fock/116594983210.js"}, domain: 'qidian.com'}
+      navigator = {userAgent: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'} // TODO: 填标头
+      performance = {}
+      performance.navigation = {type: 1}
+      ```
+
+---
 
 ## 项目说明
 
