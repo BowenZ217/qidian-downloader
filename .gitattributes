@@ -9,3 +9,5 @@
 *.sh     text eol=lf
 *.yml    text eol=lf
 *.yaml   text eol=lf
+
+resources/js/**.js linguist-documentation=false
