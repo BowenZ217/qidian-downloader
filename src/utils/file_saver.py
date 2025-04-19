@@ -85,7 +85,7 @@ def save_as_txt(content, filepath, encoding='utf-8', overwrite=False):
             else:
                 log_message(f"[OVERWRITE] Overwriting existing file at {filepath}.")
 
-        with open(filepath, 'w', encoding=encoding) as f:
+        with open(filepath, 'w', encoding=encoding, newline='\n') as f:
             f.write(content)
         log_message(f"[DONE] Text saved to {filepath}")
     except Exception as e:
@@ -122,9 +122,31 @@ def save_as_json(content, filepath, encoding='utf-8', overwrite=False):
             else:
                 log_message(f"[OVERWRITE] Overwriting existing file at {filepath}.")
         
-        with open(filepath, 'w', encoding=encoding) as f:
+        with open(filepath, 'w', encoding=encoding, newline='\n') as f:
             json.dump(content, f, ensure_ascii=False, indent=2)
         log_message(f"[DONE] JSON saved to {filepath}")
     except Exception as e:
         log_message(f"[X] Error saving JSON file: {e}", level="warning")
     return
+
+def normalize_txt_line_endings(folder_path):
+    """
+    Convert all .txt files in the given folder to use Unix-style LF (\n) line endings.
+
+    Parameters:
+        folder_path (str): Path to the folder containing .txt files.
+    """
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            if file.lower().endswith('.txt'):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    # Replace CRLF and CR with LF
+                    normalized = content.replace('\r\n', '\n').replace('\r', '\n')
+                    with open(file_path, 'w', encoding='utf-8', newline='\n') as f:
+                        f.write(normalized)
+                    print(f"[DONE] Normalized: {file_path}")
+                except Exception as e:
+                    print(f"[X] Failed to normalize {file_path}: {e}")
